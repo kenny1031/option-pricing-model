@@ -1,0 +1,18 @@
+# Core scientific libraries
+numpy>=1.26
+scipy>=1.14
+pandas>=2.2
+
+# Machine learning
+scikit-learn>=1.5
+torch>=2.3
+
+# Visualisation (Python side)
+matplotlib>=3.9
+seaborn>=0.13
+
+# Data acquisition (optional: real option chains, stock data)
+yfinance>=0.2
+
+# Tableau integration (optional, only if you want live Python calls)
+tabpy>=2.10
