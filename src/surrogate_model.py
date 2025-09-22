@@ -34,7 +34,8 @@ def train_surrogate(
     n_epochs=100,
     lr=1e-3,
     batch_size=64,
-    test_size=0.2
+    test_size=0.2,
+    plot=False,
 ):
     """Training function for surrogate model"""
     if csv_path is None:
@@ -101,14 +102,14 @@ def train_surrogate(
 
         if epoch % 10 == 0:
             print(f"Epoch {epoch}: Train Loss={avg_train_loss:.6f}, Test Loss={test_loss:.6f}")
-
-    plt.plot(train_losses, label="Train")
-    plt.plot(test_losses, label="Test")
-    plt.xlabel("Epoch")
-    plt.ylabel("MSE Loss")
-    plt.legend()
-    plt.title("Training vs Test Loss (scaled)")
-    plt.show()
+    if plot:
+        plt.plot(train_losses, label="Train")
+        plt.plot(test_losses, label="Test")
+        plt.xlabel("Epoch")
+        plt.ylabel("MSE Loss")
+        plt.legend()
+        plt.title("Training vs Test Loss (scaled)")
+        plt.show()
 
     return model, x_scaler, y_scaler
 

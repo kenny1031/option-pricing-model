@@ -1,38 +1,24 @@
-import pandas as pd
-from src.dataset import generate_qmc_dataset
-from src.surrogate_model import train_surrogate
-from src.evaluation import (
-    evaluate_methods,
-    plot_mc,
-    plot_fd,
-    plot_efficiency,
-    export_results,
-    export_surrogate_surface
-)
+import os
+from src.evaluation import evaluate_methods, plot_mc, plot_efficiency, test_fd_convergence
 
 def main():
-    print("=== Step 1: Generate synthetic dataset with QMC ===")
-    df_data = generate_qmc_dataset(n_samples=5000, N_qmc=2000, option="call")
-    df_data.to_csv("data/synthetic_qmc.csv", index=False)
-    print("Dataset saved to data/synthetic_qmc.csv")
+    # Ensure results directory exists
+    os.makedirs("results", exist_ok=True)
 
-    print("\n=== Step 2: Train ML Surrogate Model ===")
-    model, x_scaler, y_scaler = train_surrogate(csv_path="data/synthetic_qmc.csv",
-                                    n_epochs=100)
-    print("Surrogate model trained successfully.")
+    # Step 1: Evaluate methods
+    df, true_price = evaluate_methods()
+    df.to_csv("results/evaluation_results.csv", index=False)
+    print("[INFO] Results saved to results/evaluation_results.csv")
 
-    print("\n=== Step 3: Evaluate Methods (MC, QMC, FD, ML) ===")
-    df_results, true_price = evaluate_methods(S0=200, K=100, T=1.0,
-                                              r=0.05, sigma=0.6)
-    # Export to CSV for Tableau
-    export_results(df_results, true_price)
+    # Steo 2: Plots
+    # MC vs QMC
+    plot_mc(df, save_path="results/convergence_plot.png")
 
-    # Export surrogate pricing surface (for Tableau beatmaps)
-    export_surrogate_surface(model, x_scaler, y_scaler, T=0.1, r=0.05, sigma=0.2)
-    # Plot comparisons
-    plot_mc(df_results)
-    plot_fd(df_results)
-    plot_efficiency(df_results)
+    # Efficiency plot
+    plot_efficiency(df, save_path="results/efficiency_comparison.png")
+
+    # FD Convergence
+    test_fd_convergence(save_path="results/fd_convergence.png")
 
 if __name__ == "__main__":
     main()

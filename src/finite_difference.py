@@ -30,7 +30,7 @@ def finite_difference_call(S0, K, T, r, sigma, M=200, N=200, scheme="CN"):
     S = K * np.exp(x)
 
     # Payoff at maturity (scaled by K)
-    u = np.maximum(S / K - 1, 0)
+    u = np.maximum(S - K, 0) / K
 
     # Coefficients
     alpha = 0.5 * sigma ** 2 / dx ** 2
@@ -50,6 +50,10 @@ def finite_difference_call(S0, K, T, r, sigma, M=200, N=200, scheme="CN"):
 
     # Time-stepping
     for n in range(N):
+        t = T - n * dt
+        # Boundary conditions
+        u[0] = 0  # at S=0
+        u[-1] = (S_max / K) - np.exp(-r * t)  # scaled by K
         if scheme == "explicit":
             u[1:M] = u[1:M] + dt * (A @ u[1:M])
         elif scheme == "implicit":
