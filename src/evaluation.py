@@ -72,11 +72,11 @@ def evaluate_methods(
             })
 
     # Surrogate Model
-    nn_start = time.time()
     model, x_scaler, y_scaler = train_surrogate(n_epochs=100, plot=True)
     x = np.array([[S0, K, T, r, sigma]])
     x_scaled = x_scaler.transform(x)
     x_tensor = torch.tensor(x_scaled, dtype=torch.float32)
+    nn_start = time.time()
     with torch.no_grad():
         pred_scaled = model(x_tensor).numpy()
         pred = y_scaler.inverse_transform(pred_scaled)[0, 0]

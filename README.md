@@ -87,25 +87,27 @@ All results are stored in the `results/` folder:
 * `evaluation_results.csv` - Benchmark convergence/runtime data.
 
 ## Results
-### Monte Carlo vs Quasi-Monte Carlo
-* **MC**: Converges at the theoretical rate $O(1/\sqrt{N})$.
-* **QMC (Sobol)**: Consistently more accurate at the same sample size; variance reduced substantially.
-* *Observation:* For small $N$, QMC outperforms MC by more than an order of magnitude in error.
+The project benchmarks analytical, simulation, PDE, and ML approaches for European call option pricing.
 
-### Finite Difference Methods
-* **Explicit**: Stable only under CFL condition; error decreases slowly, consistent with first-order accuracy.
-* **Implicit**: Unconditionally stable, also first-order accurate; produced values very close to analytic Black-Scholes at moderate grids.
-* **Crank-Nicolson**: Achieved second-order convergence as grid resolution increased; ultimately the most accurate FD scheme.
-* *Observation:* At coarse grids implicit sometimes matched Black-Scholes better (due to error cancellation), but CN dominated as resolution refined.
+### Monte Carlo vs Quasi–Monte Carlo
+* MC: Converges at the theoretical $O(1/\sqrt{N})$ rate; suffers from high variance.
+* QMC (Sobol): Substantially more accurate than MC at the same sample size, reducing variance by more than an order of magnitude for small $N$.
+* Key finding: QMC consistently delivered the highest accuracy among stochastic simulation methods.
+
+### Finite Difference (FD) Methods
+* Explicit: Conditionally stable; slow convergence; consistent with first-order accuracy.
+* Implicit: Unconditionally stable, with results often close to Black–Scholes at moderate grids.
+* Crank–Nicolson (CN): Achieved second-order convergence and was the most accurate PDE scheme at refined grids.
+* Observation: At coarse grids, implicit sometimes matched Black–Scholes better due to error cancellation, but CN dominated at higher resolution.
 
 ### Machine Learning Surrogate
-* Neural Network surrogate trained on QMC dataset generalised well.
-* Achieved very low relative error (<0.5%) compared to Black-Scholes.
-* **Key advantage**: Once trained, inference time is effectively instantaneous, making it suitable for large-scale or real-time pricing.
+* Neural network surrogate trained on QMC-generated data, achieving <0.5% relative error compared to Black–Scholes.
+* Strength: Once trained, inference is effectively instantaneous, making it suitable for real-time or large-scale option pricing.
+* Trade-off: Training required more time than simulation, but runtime efficiency surpassed all other methods once deployed.
 
 ### Efficiency Comparison
-* **MC**: Slowest convergence, high variance.
-* **QMC**: Faster convergence, competitive runtime.
-* **FD**: Much faster than simulation, especially CN at fine grids.
-* **ML Surrogate**: Initial training cost, but then outperforms all other methods in runtime.
-* *Efficiency Frontier:* Surrogate + CN form the most practical approaches depending on whether training is pre-computed.
+* MC: Slowest convergence and highest variance.
+* QMC: Faster convergence with competitive runtimes.
+* FD: More efficient than simulations, especially Crank–Nicolson on fine grids.
+* ML Surrogate: Highest upfront training cost, but inference is fastest in production.
+* Efficiency Frontier: A combination of Surrogate + CN offers the best practical trade-off depending on whether training is precomputed.
