@@ -8,13 +8,19 @@ from .black_scholes import call_price
 from .monte_carlo import mc_option_price, qmc_option_price
 from .finite_difference import finite_difference_call
 from .surrogate_model import train_surrogate
+from typing import Tuple
 
-
-def relative_error(true, estimated):
+def relative_error(true: int | float, estimated: int | float) -> float:
     return np.abs(true - estimated) / np.abs(true)
 
 
-def evaluate_methods(S0=100, K=100, T=1.0, r=0.05, sigma=0.2):
+def evaluate_methods(
+    S0: float | int=100,
+    K: float | int=100,
+    T: float=1.0,
+    r: float=0.05,
+    sigma: float=0.2
+) -> Tuple[pd.DataFrame, float]:
     results = []
 
     # True analytic price (Black-Scholes)
@@ -86,8 +92,9 @@ def evaluate_methods(S0=100, K=100, T=1.0, r=0.05, sigma=0.2):
     df = pd.DataFrame(results)
     return df, true_price
 
+
 # Visualisation of results
-def plot_mc(df, save_path=None):
+def plot_mc(df: pd.DataFrame, save_path: str | None=None) -> None:
     # Convergence plot of MC vs QMC
     subset = df[df["method"].isin(["MC", "QMC"])]
     plt.figure()
@@ -105,7 +112,10 @@ def plot_mc(df, save_path=None):
         plt.show()
 
 
-def plot_efficiency(df, save_path=None):
+def plot_efficiency(df: pd.DataFrame, save_path: str | None=None) -> None:
+    """
+    Plot efficiency curve.
+    """
     methods = ["MC", "QMC", "explicit", "implicit", "CN", "ML surrogate"]
     plt.figure()
     for method in methods:
@@ -124,48 +134,35 @@ def plot_efficiency(df, save_path=None):
         plt.show()
 
 
-def test_fd_convergence(S0=100, K=100, T=1.0, r=0.05, sigma=0.2,
-                        grid_sizes=[50, 100, 200, 400, 600],
-                        save_path=None):
-    true_price = call_price(S0, K, T, r, sigma)
-    results = []
+def test_fd_convergence(df: pd.DataFrame, save_path: str | None = None) -> None:
+    """
+    Plot FD convergence from evaluation DataFrame.
+    """
+    fd_subset = df[df["method"].isin(["explicit", "implicit", "CN"])]
 
-    for scheme in ["explicit", "implicit", "CN"]:
-        print(f"\n=== {scheme.upper()} ===")
-        prev_err = None
-        for M in grid_sizes:
-            fd_price = finite_difference_call(S0, K, T, r, sigma, M=M, N=M, scheme=scheme)
-            err = relative_error(true_price, fd_price)
-            results.append({"scheme": scheme, "M": M, "price": fd_price, "error": err})
-
-            # Convergence rate
-            if prev_err is not None:
-                rate = np.log(prev_err/err) / np.log(2)
-                print(f"M={M:4d}, Price={fd_price:.6f}, Error={err:.3e}, Rate={rate:.2f}")
-            else:
-                print(f"M={M:4d}, Price={fd_price:.6f}, Error={err:.3e}")
-            prev_err = err
-
-    # --- Plot errors with reference slopes ---
     plt.figure()
     for scheme in ["explicit", "implicit", "CN"]:
-        sub = [r for r in results if r["scheme"] == scheme]
-        M_vals = [r["M"] for r in sub]
-        errors = [r["error"] for r in sub]
-        plt.loglog(M_vals, errors, label=scheme)
+        sub = fd_subset[fd_subset["method"] == scheme]
+        if sub.empty:
+            continue
+        M_vals = sub["N"].astype(float)
+        errors = sub["rel_error"].astype(float)
+        plt.loglog(M_vals, errors, marker="o", label=scheme)
 
     # Reference lines
-    M_ref = np.array(grid_sizes)
-    plt.loglog(M_ref, 1/M_ref, marker="*", color="gray", label="$O(1)$")     # first-order
-    plt.loglog(M_ref, 1/(M_ref**2), marker="*", color="black", label="$O(1/N^2)$")  # second-order
+    M_ref = np.array(sorted(fd_subset["N"].dropna().unique()))
+    if len(M_ref) > 0:
+        plt.loglog(M_ref, 1 / M_ref, "--", color="gray", label="$O(1)$")
+        plt.loglog(M_ref, 1 / (M_ref ** 2), "--", color="black", label="$O(1/N^2)$")
 
     plt.xlabel("Grid size $M=N$")
     plt.ylabel("Relative Error")
     plt.title("FD Convergence Study (Error vs Grid Size)")
     plt.legend()
+
     if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches="tight")
-        print(f"[INFO] Saved figure to {save_path}")
+        print(f"[INFO] Saved FD convergence plot to {save_path}")
     else:
         plt.show()
 
@@ -175,4 +172,4 @@ if __name__ == "__main__":
     print(df)
 
     plot_mc(df)  # MC vs QMC plots
-    test_fd_convergence()  # FD plots
+    test_fd_convergence(df)  # FD plots

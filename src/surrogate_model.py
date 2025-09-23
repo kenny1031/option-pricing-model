@@ -8,13 +8,14 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 from torch.onnx.utils import model_signature
 import os
+from typing import Tuple
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # project root
 DATA_DIR = os.path.join(BASE_DIR, "data")
 
 # Neutral Network
 class SurrogateNN(nn.Module):
-    def __init__(self, input_dim=5):
+    def __init__(self, input_dim: int=5):
         super().__init__()
         self.model = nn.Sequential(
             nn.Linear(input_dim, 128),
@@ -30,13 +31,13 @@ class SurrogateNN(nn.Module):
 
 # Training function
 def train_surrogate(
-    csv_path=None,
-    n_epochs=100,
-    lr=1e-3,
-    batch_size=64,
-    test_size=0.2,
-    plot=False,
-):
+    csv_path: str | None=None,
+    n_epochs: int=100,
+    lr: float=1e-3,
+    batch_size: int=64,
+    test_size: float=0.2,
+    plot: bool=False,
+) -> Tuple[SurrogateNN, StandardScaler, StandardScaler]:
     """Training function for surrogate model"""
     if csv_path is None:
         csv_path = os.path.join(DATA_DIR, "synthetic_qmc.csv")

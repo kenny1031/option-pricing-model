@@ -1,7 +1,16 @@
 import numpy as np
 from .black_scholes import call_price, put_price
 
-def finite_difference_call(S0, K, T, r, sigma, M=200, N=200, scheme="CN"):
+def finite_difference_call(
+    S0: int | float,
+    K: int | float,
+    T: int | float,
+    r: float,
+    sigma: float,
+    M: int=200,
+    N: int=200,
+    scheme: str="CN"
+) -> float:
     """
     Finite Difference (Explicit, Implicit, Crank–Nicolson) for European Call
     with log-transformation of Black–Scholes PDE.
