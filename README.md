@@ -88,7 +88,7 @@ All results are stored in the `results/` folder:
 
 ## Results
 ### Monte Carlo vs Quasi-Monte Carlo
-* **MC**: Converges at the theoretical rate $O(1/\sqrt{N}).
+* **MC**: Converges at the theoretical rate $O(1/\sqrt{N})$.
 * **QMC (Sobol)**: Consistently more accurate at the same sample size; variance reduced substantially.
 * *Observation:* For small $N$, QMC outperforms MC by more than an order of magnitude in error.
 
